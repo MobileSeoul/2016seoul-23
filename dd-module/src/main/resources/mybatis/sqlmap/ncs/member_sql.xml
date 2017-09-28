@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.MemberMapper">
+
+	<!-- 회원 로그인 체크 -->
+	<select id="selectMemberLoginCheck" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM MM_MEMBER
+		WHERE MM_ID = #{mm_id}
+		AND MM_PW = #{mm_pw}
+	]]>
+	</select>
+
+	<!-- 회원 로그인 -->
+	<select id="selectMemberLogin" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT
+			T1.MM_SEQ
+			,T1.MM_TYPE
+			,T1.MM_ID
+			,T1.MM_PW
+			,T1.MM_NAME
+			,T1.MM_HP1
+			,T1.MM_HP2
+			,T1.MM_HP3
+			,T1.MM_EMAIL
+			,T1.MM_AREA1
+			,T1.MM_AREA2
+			,T1.MM_SEX
+			,T1.MM_BIRTH_Y
+			,T1.MM_BIRTH_M
+			,T1.MM_BIRTH_D
+			,T1.MM_PIC_URL
+			,T1.MM_COM_NO
+			,T1.MM_ZIP
+			,T1.MM_ADDR1
+			,T1.MM_ADDR2
+			,T1.MM_RAND_SEED
+			,T2.MC_CATE_CODE
+			,jsobar.FN_GET_CODE_NM('MC_CATE_CODE',T2.MC_CATE_CODE)  AS MC_CATE_NM
+		FROM MM_MEMBER T1
+			LEFT OUTER JOIN (
+			SELECT MM_SEQ,MIN(MC_CATE_CODE) AS MC_CATE_CODE FROM MM_CATEGORY
+			GROUP BY MM_SEQ
+			) T2
+			ON T1.MM_SEQ = T2.MM_SEQ
+		WHERE MM_ID = #{mm_id}
+	]]>
+	</select>
+	
+	<!-- 회원 아이디 가입여부 확인 -->
+	<select id="selectMemberCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT COUNT(*) CNT FROM MM_MEMBER
+		WHERE MM_ID = #{mm_id}
+	]]>
+	</select>
+	
+	<!-- 회원 이메일 가입여부 확인 -->
+	<select id="selectEmailCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT COUNT(*) CNT FROM MM_MEMBER
+		WHERE MM_EMAIL = #{mm_email}
+	]]>
+	</select>
+	
+	<!-- 회원 전화번호 확인 -->
+	<select id="selectHpCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT COUNT(*) CNT FROM MM_MEMBER
+		WHERE CONCAT(MM_HP1,MM_HP2,MM_HP3) = CONCAT(#{mm_hp1},#{mm_hp2},#{mm_hp3})
+	]]>
+	
+	<if test="not_mm_seq != null and not_mm_seq != ''.toString()">
+	<![CDATA[
+		AND MM_SEQ not in (#{not_mm_seq})
+	]]>
+	</if>
+	</select>
+	
+	
+	
+	<!-- 회원 가입 -->
+	<insert id="insertMember" parameterType="hashmap" useGeneratedKeys="true">
+	<![CDATA[
+		INSERT INTO MM_MEMBER(
+			MM_TYPE ,MM_ID ,MM_PW ,MM_NAME 
+			,MM_HP1 ,MM_HP2 ,MM_HP3 ,MM_EMAIL 
+			,MM_AREA1 ,MM_AREA2 ,MM_SEX 
+			,MM_BIRTH_Y ,MM_BIRTH_M ,MM_BIRTH_D
+			,MM_PIC_URL ,MM_COM_NO
+			,MM_ZIP ,MM_ADDR1 ,MM_ADDR2
+			,CRE_DT
+		)VALUES(
+			#{mm_type}  ,#{mm_id}  ,#{mm_pw}  ,#{mm_name}
+			,#{mm_hp1}  ,#{mm_hp2}  ,#{mm_hp3}  ,#{mm_email}
+			,#{mm_area1}  ,#{mm_area2}  ,#{mm_sex}
+			,#{mm_birth_y}  ,#{mm_birth_m}  ,#{mm_birth_d}
+			,#{mm_pic_url}  ,#{mm_com_no}
+			,#{mm_zip}  ,#{mm_addr1}  ,#{mm_addr2}
+			,now()
+		)
+	]]>
+		<selectKey order="AFTER" resultType="int" keyProperty="mm_seq">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+	
+	
+	<!-- 회원 수정 -->
+	<update id="updateMember" parameterType="hashmap">
+	<![CDATA[
+		UPDATE MM_MEMBER SET
+			MM_HP1 = #{mm_hp1}
+			,MM_HP2 = #{mm_hp2}
+			,MM_HP3 = #{mm_hp3}
+			,MM_AREA1 = #{mm_area1}
+			,MM_AREA2 = #{mm_area2}
+			,MM_PIC_URL = #{mm_pic_url}
+			,MM_ZIP = #{mm_zip}
+			,MM_ADDR1 = #{mm_addr1}
+			,MM_ADDR2 = #{mm_addr2}
+			,MOD_DT = now()
+	]]>
+	<if test="mm_pw != null and mm_pw != ''.toString()">
+	<![CDATA[
+				,MM_PW = #{mm_pw}
+	]]>
+	</if>
+	<![CDATA[
+		WHERE MM_SEQ = #{mm_seq}	
+	]]>	
+	</update>
+	
+
+	
+	
+	<!-- 자동로그인 rand값 저장 -->
+	<update id="updateMemberRandSeq" parameterType="hashmap">
+	<![CDATA[
+		UPDATE MM_MEMBER SET
+			MM_RAND_SEED = #{mm_rand_seed}
+		WHERE MM_ID = #{mm_id}	
+	]]>	
+	</update>
+	
+	<!-- 자동 로그인 값 로그인 확인 -->
+	<select id="selectMemberLoginRandCheck" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM MM_MEMBER
+		WHERE MM_ID = #{mm_id}
+		AND MM_RAND_SEED = #{mm_rand_seed}
+	]]>
+	</select>
+	
+	<!-- 회원 찾기 -->
+	<select id="selectMemberFind" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT 
+			concat(LEFT(MM_ID,length(MM_ID)-2),'**') USER_ID
+			,MM_NAME
+			,MM_EMAIL
+		FROM MM_MEMBER
+		WHERE MM_NAME = #{mm_name}
+		AND MM_EMAIL = #{mm_email}
+	]]>
+	</select>
+	
+	<!-- 회원 찾기 - 패스워드 -->
+	<select id="selectMemberFindPw" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT 
+			concat(LEFT(MM_ID,length(MM_ID)-2),'**') USER_ID
+			,MM_NAME
+			,MM_EMAIL
+		FROM MM_MEMBER
+		WHERE MM_ID = #{mm_id} 
+		AND MM_NAME = #{mm_name}
+		AND MM_EMAIL = #{mm_email}
+	]]>
+	</select>
+	
+	
+	<!-- 회원 패스워드 변경 -->
+	<update id="updateMemberPw" parameterType="hashmap">
+	<![CDATA[
+		UPDATE MM_MEMBER SET
+			MM_PW = #{mm_pw}
+			,MM_RAND_SEED = null
+		WHERE MM_NAME = #{mm_name}
+		AND MM_EMAIL = #{mm_email}
+	]]>
+	</update>
+	
+	
+	
+	
+	
+</mapper>

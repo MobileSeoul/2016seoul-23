@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd" >
+
+<properties>
+	<comment>development</comment>
+	<entry key="SERVER_ENV">DEV</entry>
+	
+	<entry key="FRAMEWORK.MSG.INFO">TRUE</entry>
+</properties>

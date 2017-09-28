@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.LikeMapper">
+
+	<!-- 좋아요 등록 -->
+	<insert id="insertLike" parameterType="hashmap" useGeneratedKeys="false">
+	<![CDATA[
+		INSERT INTO US_LIKE(
+			UB_SEQ ,CRE_SEQ ,CRE_DT
+		)VALUES(
+			#{ub_seq} ,#{mm_seq} ,now()
+		)
+	]]>
+	</insert>
+	
+	<!-- 좋아요 삭제 -->
+	<delete id="deleteLike" parameterType="hashmap">
+	<![CDATA[
+		DELETE FROM US_LIKE
+		WHERE UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}	
+	]]>
+
+	</delete>
+	
+	<!-- 좋아요 카운트 -->
+	<select id="selectLikeCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS CNT 
+		FROM US_LIKE
+		WHERE UB_SEQ = #{ub_seq}
+	]]>
+	</select>	
+	
+	<!-- 좋아요 여부 -->
+	<select id="selectLikeSelf" parameterType="hashmap" resultType="String">
+	<![CDATA[
+		SELECT 
+			CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END LIKE_YN
+		FROM US_LIKE
+		WHERE UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}
+	]]>
+	</select>
+</mapper>

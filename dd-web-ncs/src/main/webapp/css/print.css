@@ -1,0 +1,22 @@
+	@page a4sheet{size:21.0cm 29.7cm}
+	@media print {
+		#wrap, #container, #content .subCon {background: none; width: auto; min-width: auto; min-height: auto; padding: 0px;width:790px !important}
+		h2{width:790px !important;padding-bottom:20px !important}
+		h3{width:790px !important;}
+		#header, #footer, #content .subNav, #content .vis, .noPrint {display: none !important;}
+		#content .subBox {float: none;}
+		.printOnly {display: ;}
+		#inputBody textarea, #inputBody input {display: none;}					
+		.subCon .subBox{width:790px !important;}
+		.pagePut {page-break-after: always;}
+	}
+	#wrap, #container, #content .subCon {background: none; width: auto; min-width: auto; min-height: auto; padding: 0px;width:790px !important}
+	h2{width:790px !important;padding-bottom:20px !important}
+	h3{width:790px !important;}
+	#header, #footer, #content .subNav, #content .vis, .noPrint {display: none !important;}
+	#content .subBox {float: none;}
+	.printOnly {display: ;}
+	#inputBody textarea, #inputBody input {display: none;}					
+	.subCon .subBox{width:790px !important;}
+	.pagePut {page-break-after: always;}
+	

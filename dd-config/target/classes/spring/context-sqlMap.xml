@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util
+		http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="org.playthm.module.mapper.**" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="annotationClass" value="org.playthm.core.annotation.Mapper" />
+	</bean>
+
+	<bean id="mapperScannerConfigurerNCS" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.swellsys.ncs.mapper.**" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="annotationClass" value="org.playthm.core.annotation.Mapper" />
+	</bean>
+	
+	<bean id="mapperScannerConfigurerClg" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.swellsys.clg.mapper.**" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryClg" />
+		<property name="annotationClass" value="org.playthm.core.annotation.Mapper" />
+	</bean>
+	
+	
+	<bean id="vendorProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="Oracle">oracle</prop>
+				<prop key="SQL Server">sqlserver</prop>
+				<prop key="Mysql">mysql</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="databaseIdProvider" class="org.apache.ibatis.mapping.VendorDatabaseIdProvider">
+		<property name="properties" ref="vendorProperties"/>
+	</bean>
+
+
+	<!-- local, development에서는 Refreshable 사용 -->
+	<beans profile="local, development">
+		<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="dataSource" ref="dataSource" />
+			<property name="configLocation" value="classpath:/mybatis/data/mybatis-config.xml" />
+			<property name="mapperLocations" value="classpath:/mybatis/sqlmap/**/*_sql.xml" />
+			<property name="databaseIdProvider" ref="databaseIdProvider" />
+		</bean>
+<!-- 		<bean id="sqlSessionFactoryClg" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="dataSource" ref="dataSourceClg" />
+			<property name="configLocation" value="classpath:/mybatis/data/mybatis-config.xml" />
+			<property name="mapperLocations" value="classpath:/mybatis/sqlmap/**/*_sql.xml" />
+			<property name="databaseIdProvider" ref="databaseIdProvider" />
+		</bean> -->
+	</beans>
+
+	<!-- production 에서는 Original SqlSessionFactoryBean 사용 -->
+	<beans profile="production">
+		<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="dataSource" ref="dataSource" />
+			<property name="configLocation" value="classpath:/mybatis/data/mybatis-config.xml" />
+			<property name="mapperLocations" value="classpath:/mybatis/sqlmap/**/*_sql.xml" />
+			<property name="databaseIdProvider" ref="databaseIdProvider" />
+		</bean>
+<!-- 		<bean id="sqlSessionFactoryClg" class="org.mybatis.spring.SqlSessionFactoryBean">
+			<property name="dataSource" ref="dataSourceClg" />
+			<property name="configLocation" value="classpath:/mybatis/data/mybatis-config.xml" />
+			<property name="mapperLocations" value="classpath:/mybatis/sqlmap/**/*_sql.xml" />
+			<property name="databaseIdProvider" ref="databaseIdProvider" />
+		</bean> -->
+	</beans>
+</beans>

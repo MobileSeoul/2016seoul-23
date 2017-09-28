@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.playthm.mapper.CommonMapper">
+	<sql id="multidb">
+		<choose>
+		 	<when test="_databaseId == 'oracle'">
+				<bind name="_append" value="'||'"/>
+				<bind name="_now" value="'SYSDATE'"/>
+				<bind name="_owner" value="''"/>
+				<bind name="_fn_null" value="'NVL'"/>
+				<bind name="_tb_default" value="' FROM DUAL'"/>
+				<bind name="_substr" value="'SUBSTR'"/>
+				<bind name="_substr_plus" value="''"/>
+		 	</when>
+		 	<when test="_databaseId == 'sqlserver'">
+				<bind name="_append" value="'+'"/>
+				<bind name="_now" value="'GETDATE()'"/>
+				<bind name="_owner" value="'dbo.'"/>
+				<bind name="_fn_null" value="'ISNULL'"/>
+				<bind name="_tb_default" value="''"/>
+				<bind name="_substr" value="'SUBSTRING'"/>
+				<bind name="_substr_plus" value="'+1'"/>
+		 	</when>
+		 </choose>
+	</sql>
+
+	<sql id="paging_prefix">
+		<choose>
+		 	<when test="_databaseId == 'oracle'">
+	<![CDATA[
+		SELECT
+			TB2.*
+		FROM (
+			SELECT
+				ROWNUM RNUM, TB1.*
+			FROM (
+	]]>
+			</when>
+		 	<when test="_databaseId == 'sqlserver'">
+	<![CDATA[
+		SELECT
+			*
+		FROM (
+			SELECT
+				TOP ${rowcountreal} *
+			FROM (
+				SELECT
+					TOP ${rowend} *
+				FROM (
+	]]>
+		 	</when>
+		</choose>
+	</sql>
+	
+	<sql id="paging_suffix">
+		<choose>
+		 	<when test="_databaseId == 'oracle'">
+	<![CDATA[
+			) TB1
+		) TB2
+		WHERE
+			CEIL(RNUM / #{rowcount}) = #{page}
+	]]>
+			</when>
+		 	<when test="_databaseId == 'sqlserver'">
+	<![CDATA[
+				) TB0
+				ORDER BY 1 DESC, 2 DESC
+			) TB1
+			ORDER BY 1 ASC, 2 ASC
+		) TB2
+		ORDER BY 1 DESC, 2 DESC
+	]]>
+		 	</when>
+		</choose>
+	</sql>
+</mapper>

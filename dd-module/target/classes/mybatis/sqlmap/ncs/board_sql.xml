@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.BoardMapper">
+
+
+	<!-- 글쓰기 -->
+	<insert id="insertBoard" parameterType="hashmap" useGeneratedKeys="true">
+	<![CDATA[
+		INSERT INTO US_BOARD(
+			UB_TITLE ,UB_AREA1 ,UB_AREA2 ,UB_CATEGORY ,UB_CMT ,DEL_YN
+			,CRE_DT ,CRE_SEQ
+		)VALUES(
+			#{ub_title} ,#{ub_area1} ,#{ub_area2} ,#{ub_category} ,#{ub_cmt} ,'N' 
+			,now() ,#{mm_seq}
+		)
+	]]>
+		<selectKey order="AFTER" resultType="int" keyProperty="ub_seq">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+	
+	<!-- 글수정 -->
+	<update id="updateBoard" parameterType="hashmap">
+	<![CDATA[
+		UPDATE US_BOARD SET
+			UB_TITLE = #{ub_title}
+			,UB_AREA1 = #{ub_area1}
+			,UB_AREA2 = #{ub_area2}
+			,UB_CATEGORY = #{ub_category}
+			,UB_CMT = #{ub_cmt}
+			,MOD_DT = now()
+			,MOD_SEQ = #{mm_seq}
+		WHERE UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}
+	]]>
+	</update>
+	
+	
+	<!-- 글삭제 -->
+	<update id="deleteBoard" parameterType="hashmap">
+	<![CDATA[
+		UPDATE US_BOARD SET
+			DEL_YN = 'Y'
+		WHERE UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}
+	]]>
+	</update>
+	
+	
+	
+	
+	<!-- 글 리스트 카운트 -->
+	<select id="selectBoardCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+	SELECT
+		COUNT(*) AS CNT
+	FROM US_BOARD T1
+		INNER JOIN MM_MEMBER T2
+		ON T1.CRE_SEQ = T2.MM_SEQ
+	WHERE MM_TYPE = #{mm_type}
+	AND T1.DEL_YN = 'N'	
+	]]>
+	<if test="search_area2 != null and search_area2 != ''.toString()">
+	<![CDATA[
+		AND T1.UB_AREA2 = #{search_area2}
+	]]>
+	</if>
+
+	<if test="search_text != null and search_text != ''.toString()">
+	<![CDATA[
+		AND (T1.UB_TITLE like concat('%',#{search_text},'%') OR T1.UB_CMT like concat('%',#{search_text},'%') OR T2.MM_NAME like concat('%',#{search_text},'%'))
+	]]>
+	</if>
+	
+	<if test="search_cate != null and search_cate != ''.toString()">
+		<choose>
+			<when test="search_cate == 'mycate'.toString()">
+	<![CDATA[			
+			AND T1.UB_CATEGORY IN (
+				SELECT MC_CATE_CODE FROM MM_CATEGORY
+				WHERE MM_SEQ = #{mm_seq}
+			)
+	]]>
+			</when>
+			<otherwise>
+	<![CDATA[			
+			AND T1.UB_CATEGORY = #{search_cate}
+	]]>			
+			</otherwise>
+		</choose>
+	</if>	
+	</select>
+
+	
+	
+	<!-- 글 리스트 -->
+	<select id="selectBoardList" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT 
+			T1.UB_SEQ
+			,T1.UB_AREA1
+			,T1.UB_AREA2
+			,T1.UB_TITLE
+			,T1.UB_CMT
+			,T1.CRE_DT
+			,CASE
+				WHEN datediff(now(), T1.CRE_DT)  > 7 THEN DATE_FORMAT(T1.CRE_DT,'%Y-%m-%d')
+				WHEN datediff(now(), T1.CRE_DT)  > 0 THEN CONCAT(DATEDIFF(now(),T1.CRE_DT) ,' 일전')
+				WHEN (TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT)) < 60 THEN CONCAT((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT)),'초전')
+				WHEN ((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60)  < 60 THEN CONCAT(FORMAT(((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60),0) ,' 분전')
+				WHEN ((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60/60)  < 60 THEN CONCAT(FORMAT(((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60/60),0) ,' 시간전')
+			ELSE T1.CRE_DT	END AS DATE_SHOW
+			,T2.MM_NAME
+			,T2.MM_PIC_URL
+			,IFNULL(UB_LIKE_CNT,0) AS UB_LIKE_CNT
+			,IFNULL(UB_REPLY_CNT,0) AS UB_REPLY_CNT
+			,jsobar.FN_GET_CODE_NM('MC_CATE_CODE',T1.UB_CATEGORY) AS UB_CATEGORY_NM
+			,(CASE WHEN T5.UB_LIKE_YN IS NOT NULL AND T5.UB_LIKE_YN > 0 THEN 'Y' ELSE 'N' END) LIKE_YN
+			,(CASE WHEN T1.CRE_SEQ = #{mm_seq} THEN 'Y' ELSE 'N' END) MODIFY_YN
+		FROM US_BOARD T1
+			INNER JOIN MM_MEMBER T2
+			ON T1.CRE_SEQ = T2.MM_SEQ
+			LEFT OUTER JOIN (
+				SELECT UB_SEQ,COUNT(*) AS UB_LIKE_CNT FROM US_LIKE
+				GROUP BY UB_SEQ
+			) T3
+			ON T1.UB_SEQ = T3.UB_SEQ
+			LEFT OUTER JOIN (
+				SELECT UB_SEQ,COUNT(*) UB_REPLY_CNT FROM US_REPLY
+				GROUP BY UB_SEQ
+			) T4
+			ON T1.UB_SEQ = T4.UB_SEQ
+			LEFT OUTER JOIN (
+				SELECT UB_SEQ,COUNT(*) AS UB_LIKE_YN FROM US_LIKE
+				WHERE CRE_SEQ = #{mm_seq}
+				GROUP BY UB_SEQ
+			) T5
+			ON T1.UB_SEQ = T5.UB_SEQ
+		WHERE T2.MM_TYPE = #{mm_type}
+		AND T1.DEL_YN = 'N'
+	]]>
+	<if test="search_area2 != null and search_area2 != ''.toString()">
+	<![CDATA[
+		AND T1.UB_AREA2 = #{search_area2}
+	]]>
+	</if>
+
+	<if test="search_text != null and search_text != ''.toString()">
+	<![CDATA[
+		AND (T1.UB_TITLE like concat('%',#{search_text},'%') OR T1.UB_CMT like concat('%',#{search_text},'%') OR T2.MM_NAME like concat('%',#{search_text},'%'))
+	]]>
+	</if>
+
+	<if test="search_cate != null and search_cate != ''.toString()">
+		<choose>
+			<when test="search_cate == 'mycate'.toString()">
+	<![CDATA[			
+			AND T1.UB_CATEGORY IN (
+				SELECT MC_CATE_CODE FROM MM_CATEGORY
+				WHERE MM_SEQ = #{mm_seq}
+			)
+	]]>
+			</when>
+			<otherwise>
+	<![CDATA[			
+			AND T1.UB_CATEGORY = #{search_cate}
+	]]>			
+			</otherwise>
+		</choose>
+	</if>
+	
+	<![CDATA[
+		ORDER BY T1.UB_SEQ DESC
+		LIMIT ${pageStart} ,#{pageSize}
+	]]>
+	</select>
+	
+	
+	<!-- 글 상세 -->
+	<select id="selectBoardDetail" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT 
+			T1.UB_SEQ
+			,T1.UB_AREA1
+			,T1.UB_AREA2
+			,T1.UB_TITLE
+			,T1.UB_CMT
+			,T1.CRE_DT
+			,CASE
+				WHEN datediff(now(), T1.CRE_DT)  > 7 THEN DATE_FORMAT(T1.CRE_DT,'%Y-%m-%d')
+				WHEN datediff(now(), T1.CRE_DT)  > 0 THEN CONCAT(DATEDIFF(now(),T1.CRE_DT) ,' 일전')
+				WHEN (TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT)) < 60 THEN CONCAT((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT)),'초전')
+				WHEN ((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60)  < 60 THEN CONCAT(FORMAT(((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60),0) ,' 분전')
+				WHEN ((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60/60)  < 60 THEN CONCAT(FORMAT(((TIME_TO_SEC(NOW()) - TIME_TO_SEC(T1.CRE_DT))/60/60),0) ,' 시간전')
+			ELSE T1.CRE_DT	END AS DATE_SHOW
+			,T2.MM_NAME
+			,T2.MM_PIC_URL
+			,IFNULL(UB_LIKE_CNT,0) AS UB_LIKE_CNT
+			,IFNULL(UB_REPLY_CNT,0) AS UB_REPLY_CNT
+			,jsobar.FN_GET_CODE_NM('MC_CATE_CODE',T1.UB_CATEGORY) AS UB_CATEGORY_NM
+			,(CASE WHEN T1.CRE_SEQ = #{mm_seq} THEN 'Y' ELSE 'N' END) MODIFY_YN
+		FROM US_BOARD T1
+			INNER JOIN MM_MEMBER T2
+			ON T1.CRE_SEQ = T2.MM_SEQ
+			LEFT OUTER JOIN (
+				SELECT UB_SEQ,COUNT(*) AS UB_LIKE_CNT FROM US_LIKE
+				GROUP BY UB_SEQ
+			) T3
+			ON T1.UB_SEQ = T3.UB_SEQ
+			LEFT OUTER JOIN (
+				SELECT UB_SEQ,COUNT(*) UB_REPLY_CNT FROM US_REPLY
+				GROUP BY UB_SEQ
+			) T4
+			ON T1.UB_SEQ = T4.UB_SEQ
+		WHERE T1.UB_SEQ = #{ub_seq}
+	]]>
+	</select>
+	
+	
+	
+	<!-- 글 수정 화면용 -->
+	<select id="selectBoardDetailModify" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT
+			UB_SEQ
+			,UB_TITLE
+			,UB_AREA1
+			,UB_AREA2
+			,UB_CATEGORY
+			,UB_CMT
+		FROM US_BOARD
+		WHERE UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}
+	]]>
+	</select>
+	
+	
+</mapper>

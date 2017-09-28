@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.ReplyMapper">
+
+
+	<!-- 글쓰기 -->
+	<insert id="insertReply" parameterType="hashmap" useGeneratedKeys="true">
+	<![CDATA[
+		INSERT INTO US_REPLY(
+			UB_SEQ ,UR_PRE_SEQ ,UR_TEXT ,CRE_SEQ ,CRE_DT
+		)VALUES(
+			#{ub_seq}  ,#{ur_pre_seq}  ,#{ur_text} ,#{mm_seq} ,now() 
+		)
+	]]>
+		<selectKey order="AFTER" resultType="int" keyProperty="ur_seq">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+	
+	<!-- 글 리스트 카운트 -->
+	<select id="selectReplyCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT
+			COUNT(*) CNT
+		FROM US_REPLY T1
+			INNER JOIN MM_MEMBER T2
+			ON T1.CRE_SEQ = T2.MM_SEQ
+		WHERE UB_SEQ = #{ub_seq}
+	]]>
+	</select>
+
+	
+	
+	<!-- 글 리스트 -->
+	<select id="selectReplyList" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT
+			UR_SEQ
+			,T1.UR_TEXT
+			,DATE_FORMAT(T1.CRE_DT,'%Y-%m-%d %h:%i') CRE_DT
+			,T2.MM_NAME
+			,CASE WHEN #{mm_seq} = T1.CRE_SEQ THEN 'Y' ELSE 'N' END DEL_YN
+		FROM US_REPLY T1
+			INNER JOIN MM_MEMBER T2
+			ON T1.CRE_SEQ = T2.MM_SEQ
+		WHERE UB_SEQ = #{ub_seq}
+		ORDER BY UR_SEQ DESC
+	]]>
+	</select>
+	
+	
+	<!-- 댓글 삭제 -->
+	<delete id="deleteReply" parameterType="hashmap">
+	<![CDATA[
+		DELETE FROM US_REPLY
+		WHERE UR_SEQ = #{ur_seq}
+		AND UB_SEQ = #{ub_seq}
+		AND CRE_SEQ = #{mm_seq}
+	]]>
+	</delete>
+	
+	
+</mapper>

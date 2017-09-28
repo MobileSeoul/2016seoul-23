@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.CodeMapper">
+	<!-- 단일 코드건 정보 가져오기  -->
+	<select id="selectCode" resultType="hashmap" parameterType="hashmap">
+		<include refid="org.playthm.mapper.CommonMapper.multidb" />
+	<![CDATA[
+		SELECT
+			TB.PRT_CD
+			, TB.CD
+			, TB.NM
+			, TB.ETC1
+		FROM
+			SM_CODE TB
+		WHERE
+			TB.PRT_CD = #{prt_cd}
+			AND TB.CD = #{cd}
+			AND TB.USE_YN = 'Y'
+		ORDER BY
+			TB.PRT_CD
+			, TB.CD
+	]]>
+	</select>
+
+
+	<!-- 코드 리스트 가져오기  -->
+	<select id="selectCodeList" resultType="hashmap" parameterType="hashmap">
+		<include refid="org.playthm.mapper.CommonMapper.multidb" />
+	<![CDATA[
+		SELECT
+			TB.PRT_CD
+			, TB.CD
+			, TB.NM
+			, TB.ETC1
+		FROM
+			SM_CODE TB
+		WHERE
+			USE_YN = 'Y'
+	]]>
+		<if test="prt_cd != null">
+	<![CDATA[
+			AND TB.PRT_CD = #{prt_cd}
+	]]>
+		</if>
+	<![CDATA[
+		ORDER BY
+			TB.PRT_CD
+			, TB.DISP_ORD
+			, TB.NM
+	]]>
+	</select>
+</mapper>

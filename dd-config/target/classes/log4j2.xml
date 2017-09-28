@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configuration>
+<Configuration>
+<!-- Appender, Layout 설정 -->
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d %5p [%c{1.}] %m%n"/>
+		</Console>
+<!-- 		<File name="file" fileName="c:/logs/debug.log" append="false"> -->
+<!-- 			<PatternLayout pattern="%d %5p [%c] %m%n"/> -->
+<!-- 		</File> -->
+	</Appenders>
+
+	<!-- Logger 설정 -->
+	<Loggers>
+		<Logger name="org.springframework" level="info" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		<Logger name="org.playthm.core" level="debug" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		<Logger name="org.playthm.module" level="debug" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		<Logger name="org.playthm.web" level="debug" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		<Logger name="com.swellsys.ncs.web" level="debug" additivity="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		<logger name="log4jdbc" level="error" additivity="false">
+			<appender-ref ref="console"/>
+		</logger>
+		<logger name="log4jdbc.log4j2" level="info" additivity="false">
+			<MarkerFilter marker="LOG4JDBC_JDBC" onMatch="DENY" onMismatch="NEUTRAL"/>
+			<appender-ref ref="console"/>
+		</logger>
+		<Root level="error">
+			<AppenderRef ref="console"/>
+<!-- 			<AppenderRef ref="file"/> -->
+		</Root>
+	</Loggers> 
+</Configuration>

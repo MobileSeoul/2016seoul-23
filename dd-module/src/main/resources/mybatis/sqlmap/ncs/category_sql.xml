@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.swellsys.ncs.mapper.CategoryMapper">	
+	<!-- 카테고리 카운트 확인 -->
+	<select id="selectCategoryCount" parameterType="hashmap" resultType="int">
+	<![CDATA[
+		SELECT COUNT(*) CNT FROM MM_CATEGORY
+		WHERE MM_SEQ = #{mm_seq}
+	]]>
+	</select>
+	
+	<!-- 카테고리 정보 등록 -->
+	<insert id="insertCategory" parameterType="hashmap" useGeneratedKeys="false">
+	<![CDATA[
+		INSERT INTO MM_CATEGORY(
+			MM_SEQ ,MC_CATE_CODE
+		)VALUES(
+			#{mm_seq} ,#{mc_cate_code}
+		)
+	]]>
+	</insert>
+	
+	<!-- 카테고리 정보 삭제 -->
+	<delete id="deleteCategory" parameterType="hashmap">
+	<![CDATA[
+		DELETE FROM MM_CATEGORY
+		WHERE MM_SEQ = #{mm_seq}
+	]]>
+	<if test="mm_cate_code">
+	<![CDATA[	
+			AND MC_CATE_CODE = #{mm_cate_code}
+	]]>
+	</if>
+	</delete>
+	
+	
+	<!-- 카테고리 조회 -->
+	<select id="selectCategory" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT MM_SEQ ,MC_CATE_CODE FROM MM_CATEGORY
+		WHERE MM_SEQ = #{mm_seq}
+	]]>
+	</select>
+</mapper>

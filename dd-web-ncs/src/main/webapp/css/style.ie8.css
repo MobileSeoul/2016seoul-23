@@ -1,0 +1,30 @@
+
+body{font-family:'NanumBarunGothicBold', dotum, Arial, sans-serif;letter-spacing:-1px;font-size:12px;}
+
+.nav ul > li{font-size:14px;}
+.tbl.bodyTbl tbody tr th,
+.tbl.bodyTbl tbody tr td,
+.tbl.headTbl thead tr th
+.tbl.headTbl tbody tr td,
+.tbl.prodTbl tbody tr td,
+.prdtViewCon .prdtViewTop .tblBox .bodyTbl tbody tr th,
+.prdtViewCon .prdtViewTop .tblBox .bodyTbl tbody tr td,
+.chgReqViewCon .chgReqViewTop .tblBox .bodyTbl tbody tr th,
+.chgReqViewCon .chgReqViewTop .tblBox .bodyTbl tbody tr td{font-size:12px;}
+.tbl.prodTbl tbody tr td+td+td{font-size:11px;}
+.icoBtn a.alt span.altTxt{font-size:11px;}
+
+select.sel{font-size:12px;line-height:16px;}
+input.inp,
+input.fileInp,
+textarea.text{font-size:12px;line-height:16px;}
+
+a.default span{font-size:12px;font-weight:bold;}
+a.sBtn{font-size:11px;}
+
+.cataTbl{table-layout:fixed;width:1000px;}
+
+.popCon h1{font-size:18px;}
+
+.timeCon ul li{width:470px;}
+.timeCon ul li+li{width:262px;}
